@@ -3,6 +3,7 @@ var Asana = require('asana');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var jade = require('jade');
+var config = require('config');
 var app = express();
 
 // Causes request cookies to be parsed, populating `req.cookies`.
@@ -12,9 +13,10 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set('views', './views');
 app.set('view engine', 'jade');
 
-var clientId = "33733060321204";
-var clientSecret = "00d66e24756a02a0b865b5ff74e0c4f4";
-var port = process.env['PORT'] || 3000;
+var clientId = config.get('oauth.client_id');
+var clientSecret = config.get('oauth.client_secret');
+var port = config.get('port') || 3000;
+var redirect_uri = config.get('oauth.redirect_uri');
 
 // Create an Asana client. Do this per request since it keeps state that
 // shouldn't be shared across requests.
@@ -22,7 +24,7 @@ function createClient() {
     return Asana.Client.create({
         clientId: clientId,
         clientSecret: clientSecret,
-        redirectUri: 'http://localhost:' + port + '/oauth_callback'
+        redirectUri: redirect_uri
     });
 }
 
