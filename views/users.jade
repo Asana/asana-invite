@@ -1,0 +1,27 @@
+extends layout
+
+block content
+    div.page-header
+        h1 #{org} Organization
+    div
+        h4 Invite a new memeber
+        form(action='/invite', method='post')
+            div.input-group
+                input(type='text' placeholder='user@domain.com' aria-describedby='basic-addon1')#form-control
+                span
+                    button.btn.btn-default(type='button') Invite
+    div.panel.panel-default
+        div.panel-heading
+            table.table#users
+                thead
+                    th Name
+                    th Email
+                tbody
+                    each user in users
+                        tr(id=user.id)
+                            td #{user.name}
+                            td #{user.email}
+    script.
+        $(document).ready(function () {
+            $('#users').dataTable();
+        });
