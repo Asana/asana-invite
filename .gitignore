@@ -1,2 +1,6 @@
+
 .idea
 node_modules
+
+# Dont check in the config containing oauth client_secret :-)
+default.json
