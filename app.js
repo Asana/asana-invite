@@ -35,33 +35,6 @@ function createClient() {
     });
 }
 
-// Home
-app.get('/', function (req, res) {
-    // If client is in the session, use it.
-
-    var client = sessionClients.get(req.session.id);
-
-    if (client) {
-        // Here's where we direct the client to use Oauth with the credentials
-        // we have acquired.
-
-        client.users.me({opt_expand: 'workspaces'}).then(function (me) {
-            var user = me.name;
-            var orgs = me.workspaces.filter(function (w) {
-                return w.is_organization
-            });
-            req.session.orgs = orgs;
-            req.session.user = user;
-            res.render('home', {user: user, orgs: orgs});
-        }).catch(function (err) {
-            res.end('Error fetching user: ' + err);
-        });
-    } else {
-        res.render('welcome')
-    }
-
-});
-
 // OAuth flow
 app.get('/signin', function (req, res) {
     var client = createClient();
@@ -87,50 +60,81 @@ app.get('/oauth_callback', function (req, res) {
     }
 });
 
-// POST
-app.post('/', function (req, res) {
-    var client = getClientFromSession(req, res);
-    var current_org = req.session.orgs.filter(function (o) {
-        return o.id == req.body.org;
-    })[0];
-    req.session.current_org = current_org;
+// Home
+app.get('/', function (req, res) {
+    // If client is in the session, use it.
+    var client = sessionClients.get(req.session.id);
 
-    var users = client.users.findByWorkspace(current_org.id, {opt_expand: "this"}).then(function (users) {
-        req.session.users = users;
-        res.render('users', {org: current_org.name, users: users.data})
-    }).catch(function (err) {
-        res.render('error', err)
-    });
+    if (client) {
+        // Here's where we direct the client to use Oauth with the credentials
+        // we have acquired.
+        client.users.me({opt_expand: 'workspaces'}).then(function (me) {
+            var user = me.name;
+            var orgs = me.workspaces.filter(function (w) {
+                return w.is_organization
+            });
+            req.session.orgs = orgs;
+            req.session.user = user;
+            res.render('home', {user: user, orgs: orgs});
+        }).catch(function (err) {
+            res.end('Error fetching user: ' + err);
+        });
+    } else {
+        res.render('welcome')
+    }
+
+});
+
+app.get('/orgs/:org', function (req, res) {
+    var currentOrg = req.session.orgs.filter(function (o) {
+        return o.id == req.params.org;
+    })[0];
+
+    req.session.current_org = currentOrg;
+
+    // Always get the list of users in case it has changed. Should cache this for performance.
+    var client = getClientFromSession(req, res);
+    var users = client.users.findByWorkspace(currentOrg.id, {opt_expand: "this"})
+        .then(function (users) {
+            req.session.users = users;
+            res.render('org', {orgs: req.session.orgs, currentOrg: currentOrg, users: users.data})
+        }).catch(function (err) {
+            console.log(err);
+            res.render('error', err)
+        });
+});
+
+
+// POST
+app.post('/org', function (req, res) {
+    res.redirect('/orgs/' + req.body.org)
 });
 
 app.post('/invite', function (req, res) {
     var client = getClientFromSession(req, res);
-    var invitee = req.body.invitee;
-    var org = req.session.current_org;
-    var data = {user: invitee};
-    var path = "/workspaces/" + org.id + "/addUser";
-    var client = getClientFromSession(req, res);
-    client.dispatcher.post(path, data).then(function (response) {
-        console.log(response)
-    }).catch(function (err) {
-        console.log(err);
-        res.render('error', err);
-    });
-    res.redirect('/');
+    var data = {user: req.body.invitee};
+    var currentOrg = req.session.current_org;
+    client.dispatcher.post("/workspaces/" + currentOrg.id + "/addUser", data)
+        .then(function (response) {
+            console.log(response)
+        }).catch(function (err) {
+            console.log(err);
+            res.render('error', err);
+        });
+    res.redirect('/orgs/' + currentOrg.id);
 });
 
 app.post('/decommission', function (req, res) {
     var client = getClientFromSession(req, res);
-    var user = req.body.userId;
-    var org = req.session.current_org;
-    var data = {user: user};
-    var path = "/workspaces/" + org.id + "/removeUser";
-    client.dispatcher.post(path, data).then(function (response) {
-        console.log(response);
-    }).catch(function (err) {
-        console.log(err);
-    });
-    res.redirect('/');
+    var data = {user: req.body.userId};
+    var currentOrg = req.session.current_org;
+    client.dispatcher.post("/workspaces/" + currentOrg.id + "/removeUser", data)
+        .then(function (response) {
+            console.log(response);
+        }).catch(function (err) {
+            console.log(err);
+        });
+    res.redirect('/orgs/' + currentOrg.id);
 });
 
 // Helpers

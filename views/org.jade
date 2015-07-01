@@ -2,23 +2,29 @@ extends layout
 
 block content
     include modal
-    div.container.text-center
-        div.page-header
-            h1 #{org} Organization
+    div.container.text-left
+        div.page-header.text-center
+            h1 #{currentOrg.name} Organization
+        div
+            h4 Switch Organizations
+            form(action='/org', method='post')
+                select(onchange="this.form.submit()" name="org")
+                    each org in orgs
+                        option(value=org.id selected=(org.id == currentOrg.id ? "selected" : undefined)) #{org.name}
         div.text-left
             form(action='/invite', method='post')
-                div.input-group.text-left
-                    h4 Invite a new member to #{org}
+                div.input-group
+                    h4 Invite a new member to #{currentOrg.name}
                     input(type='text' name='invitee' placeholder='user@domain.com' aria-describedby='basic-addon1')#form-control
                     span
                         button.btn.btn-primary(type='submit') Invite
-        div.panel.panel-default.text-left
+        div.panel.panel-default
             div.panel-heading
                 table.table#users
                     thead
                         th Name
                         th Email
-                        th Remove User
+                        th.text-center Remove User
                     tbody
                         each user in users
                             tr

@@ -6,7 +6,7 @@ block content
             h1 Welcome, #{user}
         div
             h3 Select an organization you would like to manage
-        form(action='/', method='post')
+        form(action='/org', method='post')
             select(name="org")
                 each org in orgs
                     option(value=org.id) #{org.name}
