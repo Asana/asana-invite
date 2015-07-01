@@ -29,7 +29,7 @@ block content
                         each user in users
                             tr
                                 td #{user.name}
-                                td #{user.email}`
+                                td #{user.email}
                                 td.text-center
                                     p(data-placement="top" data-toggle="tooltip" title="Remove User")
                                         button.delete-user.btn.btn-danger.btn-xs(data-user-id=user.id data-title="Delete" data-toggle="modal" data-target="#delete")
