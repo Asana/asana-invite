@@ -116,19 +116,21 @@ app.post('/invite', function (req, res) {
         console.log(err);
         res.render('error', err);
     });
+    res.redirect('/');
 });
 
 app.post('/decommission', function (req, res) {
     var client = getClientFromSession(req, res);
-    var user = req.body.user_id;
+    var user = req.body.userId;
     var org = req.session.current_org;
     var data = {user: user};
-    var path = "/workspaces/" + org + "/removeUser";
+    var path = "/workspaces/" + org.id + "/removeUser";
     client.dispatcher.post(path, data).then(function (response) {
         console.log(response);
     }).catch(function (err) {
         console.log(err);
     });
+    res.redirect('/');
 });
 
 // Helpers

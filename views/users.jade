@@ -41,6 +41,6 @@ block content
             $('#delete').on('show.bs.modal', function (e) {
                 //get data-id attribute of the clicked element
                 var userID = $(e.relatedTarget).data('user-id');
-                $(e.currentTarget).find('button[name="user-id"]').val(userID);
+                $(e.currentTarget).find('button[name="userId"]').val(userID);
             });
         });
