@@ -1,0 +1,22 @@
+html
+    body
+        form(action='/decommission' method='post')
+            #delete.modal.fade(tabindex='-1', role='dialog', aria-labelledby='edit', aria-hidden='true')
+                .modal-dialog
+                    .modal-content
+                        .modal-header
+                            button.close(type='button', data-dismiss='modal', aria-hidden='true')
+                                span.glyphicon.glyphicon-remove(aria-hidden='true')
+                            h4#Heading.modal-title.custom_align Remove this user
+                        .modal-body
+                            .alert.alert-danger
+                                span.glyphicon.glyphicon-warning-sign
+                                |  Are you sure you want to remove this user from the organization?
+                        .modal-footer
+
+                            button.btn.btn-success(name='user_id' type='submit')
+                                span.glyphicon.glyphicon-ok-sign
+                                |  Yes
+                            button.btn.btn-default(type='button', data-dismiss='modal')
+                                span.glyphicon.glyphicon-remove
+                                |  No

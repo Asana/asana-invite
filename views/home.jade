@@ -1,12 +1,13 @@
 extends layout
 
 block content
-    div.page-header
-        h1 Welcome, #{user}
-    div
-        h3 Select an organization you would like to manage
-    form(action='/', method='post')
-        select(name="org")
-            each org in orgs
-                option(value=org.id) #{org.name}
-        button.btn(type='submit') Submit
+    div.containter.text-center
+        div.page-header
+            h1 Welcome, #{user}
+        div
+            h3 Select an organization you would like to manage
+        form(action='/', method='post')
+            select(name="org")
+                each org in orgs
+                    option(value=org.id) #{org.name}
+            button.btn.btn-primary(type='submit') Submit

@@ -1,27 +1,46 @@
 extends layout
 
 block content
-    div.page-header
-        h1 #{org} Organization
-    div
-        h4 Invite a new memeber
-        form(action='/invite', method='post')
-            div.input-group
-                input(type='text' placeholder='user@domain.com' aria-describedby='basic-addon1')#form-control
-                span
-                    button.btn.btn-default(type='button') Invite
-    div.panel.panel-default
-        div.panel-heading
-            table.table#users
-                thead
-                    th Name
-                    th Email
-                tbody
-                    each user in users
-                        tr(id=user.id)
-                            td #{user.name}
-                            td #{user.email}
+    include modal
+    div.container.text-center
+        div.page-header
+            h1 #{org} Organization
+        div.text-left
+            form(action='/invite', method='post')
+                div.input-group.text-left
+                    h4 Invite a new member to #{org}
+                    input(type='text' name='invitee' placeholder='user@domain.com' aria-describedby='basic-addon1')#form-control
+                    span
+                        button.btn.btn-primary(type='submit') Invite
+        div.panel.panel-default.text-left
+            div.panel-heading
+                table.table#users
+                    thead
+                        th Name
+                        th Email
+                        th Remove User
+                    tbody
+                        each user in users
+                            tr
+                                td #{user.name}
+                                td #{user.email}`
+                                td.text-center
+                                    p(data-placement="top" data-toggle="tooltip" title="Remove User")
+                                        button.delete-user.btn.btn-danger.btn-xs(data-user-id=user.id data-title="Delete" data-toggle="modal" data-target="#delete")
+                                            span.glyphicon.glyphicon-trash
     script.
         $(document).ready(function () {
-            $('#users').dataTable();
+            $('#users').dataTable({
+                columnDefs: [{
+                    targets: 2,
+                    orderable: false,
+                    searchable: false
+                }]
+            });
+            //triggered when modal is about to be shown
+            $('#delete').on('show.bs.modal', function (e) {
+                //get data-id attribute of the clicked element
+                var userID = $(e.relatedTarget).data('user-id');
+                $(e.currentTarget).find('button[name="user-id"]').val(userID);
+            });
         });
