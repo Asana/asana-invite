@@ -1,3 +1,6 @@
+extends layout
+
 block content
     div.container.text-center
-        h1.error An Error Occurred #{err}
+        h1.error An Error Occurred: #{error_message}
+        a(href="/") Click here to start over

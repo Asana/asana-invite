@@ -86,22 +86,25 @@ app.get('/', function (req, res) {
 });
 
 app.get('/orgs/:org', function (req, res) {
-    var currentOrg = req.session.orgs.filter(function (o) {
-        return o.id == req.params.org;
-    })[0];
-
-    req.session.current_org = currentOrg;
-
-    // Always get the list of users in case it has changed. Should cache this for performance.
     var client = getClientFromSession(req, res);
-    var users = client.users.findByWorkspace(currentOrg.id, {opt_expand: "this"})
-        .then(function (users) {
-            req.session.users = users;
-            res.render('org', {orgs: req.session.orgs, currentOrg: currentOrg, users: users.data})
-        }).catch(function (err) {
-            console.log(err);
-            res.render('error', err)
-        });
+    if (client) {
+        var currentOrg = req.session.orgs.filter(function (o) {
+            return o.id == req.params.org;
+        })[0];
+
+        req.session.current_org = currentOrg;
+
+        // Always get the list of users in case it has changed. Should cache this for performance.
+
+        var users = client.users.findByWorkspace(currentOrg.id, {opt_expand: "this"})
+            .then(function (users) {
+                req.session.users = users;
+                res.render('org', {orgs: req.session.orgs, currentOrg: currentOrg, users: users.data})
+            }).catch(function (err) {
+                console.log(err);
+                res.render('error', err)
+            });
+    }
 });
 
 
@@ -112,29 +115,32 @@ app.post('/org', function (req, res) {
 
 app.post('/invite', function (req, res) {
     var client = getClientFromSession(req, res);
-    var data = {user: req.body.invitee};
-    var currentOrg = req.session.current_org;
-    client.dispatcher.post("/workspaces/" + currentOrg.id + "/addUser", data)
-        .then(function (response) {
-            console.log(response)
-        }).catch(function (err) {
-            console.log(err);
-            res.render('error', err);
-        });
-    res.redirect('/orgs/' + currentOrg.id);
+    if (client) {
+        var data = {user: req.body.invitee};
+        var currentOrg = req.session.current_org;
+        client.workspaces.addUser(currentOrg.id, data)
+            .then(function (response) {
+                console.log(response)
+                res.redirect('/orgs/' + currentOrg.id);
+            }).catch(function (err) {
+                console.log(err);
+                res.render("error", {error_message: err.message})
+            });
+    }
 });
 
 app.post('/decommission', function (req, res) {
     var client = getClientFromSession(req, res);
     var data = {user: req.body.userId};
     var currentOrg = req.session.current_org;
-    client.dispatcher.post("/workspaces/" + currentOrg.id + "/removeUser", data)
+    client.workspaces.removeUser(currentOrg.id, data)
         .then(function (response) {
             console.log(response);
+            res.redirect('/orgs/' + currentOrg.id);
         }).catch(function (err) {
             console.log(err);
+            res.render("error", {error_message: err.message})
         });
-    res.redirect('/orgs/' + currentOrg.id);
 });
 
 // Helpers
@@ -146,6 +152,8 @@ function getClientFromSession(req, res) {
         console.log("Client not in session");
         res.render("Error");
     }
-};
+}
 
 app.listen(port);
+
+console.log("Listening on http://localhost:" + port);
